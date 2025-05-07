@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+ 
+    <!-- #Please add the automated action for sending mail to responsible(salesperson) of sale order when the delivery order is delivered. -->
+    <!-- Emai Template for Delivery Mail -->
+    <record id="email_template_delivery_done" model="mail.template">
+        <field name="name">Delivery Done Notification</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="subject">Delivery {{ object.name }} Completed</field>
+        <field name="email_to">{{object.sale_id.user_id.email}}</field>
+        <field name="body_html" type="html">
+            
+              <p>Hello <t t-out="object.sale_id.user_id.name"></t>,</p>
+              <p>The delivery <strong><t t-out="object.name"></t></strong> related to Sale Order <strong><t t-out="object.sale_id.name"></t></strong> has been completed.</p>
+              <p>Thank you,<br/>Odoo System</p>
+              
+        </field>
+      </record> 
+
+
+      <!-- Server Action for Delivery Mail -->
+      <record id="server_action_notify" model="ir.actions.server">
+        <field name="name">Notify Salesperson</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="state">code</field>
+        <field name="code">
+            if record.sale_id and record.sale_id.user_id and record.sale_id.user_id.email:
+                template = env.ref('custom_sales_extensions.email_template_delivery_done')
+                template.send_mail(record.id, force_send=True)
+        </field>
+      </record>
+
+
+      <!-- Automation Action for Delivery Mail -->
+      <record id="auto_action_notify_salesperson_delivery_done" model="base.automation">
+        <field name="name">Notify Salesperson When Delivery Is Done</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="trigger">on_write</field>
+        <field name="filter_pre_domain">[('state','=','done'), ('sale_id','!=',False)]</field>
+        <field name="action_server_ids" eval="[(4, ref('server_action_notify'))]"/>
+    </record>
+  </odoo>

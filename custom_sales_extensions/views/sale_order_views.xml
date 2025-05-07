@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Default Search Filter: Replace the default filter My Quotations with Sales Orders to display confirmed and done orders by default. -->
+    <record id="view_sales_order_filter_inherit_sales_orders" model="ir.ui.view">
+        <field name="name">sale.order.search.inherit.sales_orders</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.sale_order_view_search_inherit_quotation"/>
+        <field name="arch" type="xml">
+            <!-- Replace default My Quotations -->
+            <xpath expr="//filter[@name='my_quotation']" position="replace">
+                <!-- Replace with confirmed and done orders -->
+                <filter string="Sales Orders" name="my_quotation"
+                        domain="[('state', 'in', ('sale', 'done'))]"
+                        context="{'default_filter_confirmed_done': 1}" help="Confirmed and Done Orders"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
